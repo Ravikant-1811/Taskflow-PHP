@@ -26,6 +26,27 @@ function require_login(): array
     return $user;
 }
 
+function require_admin(): array
+{
+    $user = require_login();
+    if (($user['role'] ?? 'user') !== 'admin') {
+        http_response_code(403);
+        echo 'Forbidden';
+        exit;
+    }
+
+    return $user;
+}
+
+function is_admin(?array $user): bool
+{
+    if (!$user) {
+        return false;
+    }
+
+    return ($user['role'] ?? 'user') === 'admin';
+}
+
 function login_user(int $userId): void
 {
     $_SESSION['user_id'] = $userId;

@@ -25,15 +25,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->fetch()) {
             $error = 'Email already registered.';
         } else {
+            $countStmt = db()->query('SELECT COUNT(*) AS total FROM users');
+            $total = (int)($countStmt->fetch()['total'] ?? 0);
+            $role = $total === 0 ? 'admin' : 'user';
             $hash = password_hash($password, PASSWORD_DEFAULT);
             $stmt = db()->prepare(
-                'INSERT INTO users (name, email, password_hash)
-                 VALUES (:name, :email, :password_hash)'
+                'INSERT INTO users (name, email, password_hash, role)
+                 VALUES (:name, :email, :password_hash, :role)'
             );
             $stmt->execute([
                 ':name' => $name,
                 ':email' => $email,
                 ':password_hash' => $hash,
+                ':role' => $role,
             ]);
             login_user((int)db()->lastInsertId());
             header('Location: /dashboard.php');
@@ -50,32 +54,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class="container">
-    <h1>TaskFlow</h1>
-    <p class="subtitle">Create your account to start assigning tasks.</p>
+<div class="container auth-layout">
+    <section class="auth-hero">
+        <div class="brand">
+            <span class="brand-mark">TF</span>
+            <div>
+                <h1>TaskFlow</h1>
+                <p class="subtitle">Bring clarity to team work in minutes.</p>
+            </div>
+        </div>
+        <div class="hero-card">
+            <h2>Get started fast</h2>
+            <ul class="feature-list">
+                <li>Create tasks and assign owners</li>
+                <li>Track completion and timelines</li>
+                <li>Admin dashboard included</li>
+                <li>Secure session-based login</li>
+            </ul>
+        </div>
+        <p class="admin-note">The first account created becomes the admin. You can promote others later.</p>
+    </section>
 
-    <?php if ($error): ?>
-        <div class="alert"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+    <section class="auth-form">
+        <h2>Create your account</h2>
+        <p class="subtitle">Start assigning tasks in seconds.</p>
 
-    <form method="post" class="card">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
-        <label>
-            Full name
-            <input type="text" name="name" required>
-        </label>
-        <label>
-            Email
-            <input type="email" name="email" required>
-        </label>
-        <label>
-            Password
-            <input type="password" name="password" minlength="6" required>
-        </label>
-        <button type="submit">Create account</button>
-    </form>
+        <?php if ($error): ?>
+            <div class="alert"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
 
-    <p class="footnote">Already have an account? <a href="/login.php">Sign in</a>.</p>
+        <form method="post" class="card">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+            <label>
+                Full name
+                <input type="text" name="name" required>
+            </label>
+            <label>
+                Email
+                <input type="email" name="email" required>
+            </label>
+            <label>
+                Password
+                <input type="password" name="password" minlength="6" required>
+            </label>
+            <button type="submit">Create account</button>
+            <div class="form-links">
+                <span class="muted">Already have an account? <a href="/login.php">Sign in</a>.</span>
+            </div>
+        </form>
+
+        <footer class="auth-footer">
+            <a href="/login.php">Sign in</a>
+            <span class="dot">•</span>
+            <a href="#">Privacy</a>
+            <span class="dot">•</span>
+            <a href="#">Terms</a>
+        </footer>
+    </section>
 </div>
 </body>
 </html>

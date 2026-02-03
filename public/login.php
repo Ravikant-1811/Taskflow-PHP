@@ -37,28 +37,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class="container">
-    <h1>TaskFlow</h1>
-    <p class="subtitle">Sign in to manage tasks.</p>
+<div class="container auth-layout">
+    <section class="auth-hero">
+        <div class="brand">
+            <span class="brand-mark">TF</span>
+            <div>
+                <h1>TaskFlow</h1>
+                <p class="subtitle">Plan, assign, and complete work together.</p>
+            </div>
+        </div>
+        <div class="hero-card">
+            <h2>Everything in one place</h2>
+            <ul class="feature-list">
+                <li>Assign tasks to any teammate</li>
+                <li>Track status in real time</li>
+                <li>Admin dashboard for control</li>
+                <li>Simple, secure session login</li>
+            </ul>
+        </div>
+        <p class="admin-note">Admins use the same login. First user is automatically an admin.</p>
+    </section>
 
-    <?php if ($error): ?>
-        <div class="alert"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
+    <section class="auth-form">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Sign in to manage tasks.</p>
 
-    <form method="post" class="card">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
-        <label>
-            Email
-            <input type="email" name="email" required>
-        </label>
-        <label>
-            Password
-            <input type="password" name="password" required>
-        </label>
-        <button type="submit">Login</button>
-    </form>
+        <?php if ($error): ?>
+            <div class="alert"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
 
-    <p class="footnote">New here? <a href="/register.php">Create an account</a>.</p>
+        <form method="post" class="card">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+            <label>
+                Email
+                <input type="email" name="email" required>
+            </label>
+            <label>
+                Password
+                <input type="password" name="password" required>
+            </label>
+            <button type="submit">Login</button>
+            <div class="form-links">
+                <a href="#" class="muted">Forgot password?</a>
+                <span class="muted">New here? <a href="/register.php">Create an account</a>.</span>
+            </div>
+        </form>
+
+        <footer class="auth-footer">
+            <a href="/register.php">Create account</a>
+            <span class="dot">•</span>
+            <a href="#">Privacy</a>
+            <span class="dot">•</span>
+            <a href="#">Terms</a>
+        </footer>
+    </section>
 </div>
 </body>
 </html>

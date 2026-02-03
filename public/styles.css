@@ -30,12 +30,80 @@ a {
     padding: 0 20px 60px;
 }
 
+.auth-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.auth-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.brand-mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--accent), #0f4046);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.hero-card {
+    background: #fff7ec;
+    border-radius: 16px;
+    padding: 18px;
+    border: 1px solid #f0e0cc;
+}
+
+.feature-list {
+    margin: 10px 0 0;
+    padding: 0 0 0 18px;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-note {
+    color: #7a5a3a;
+    background: #fff3e2;
+    border: 1px solid #f0d4b6;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
     margin-bottom: 24px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 h1 {
@@ -92,6 +160,31 @@ button, .button {
     text-align: center;
 }
 
+.form-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.auth-footer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.auth-footer .dot {
+    color: #b7b1a8;
+}
+
+.button.danger {
+    background: #b23b2a;
+}
+
 .button.secondary {
     background: transparent;
     border: 1px solid var(--accent);
@@ -135,6 +228,39 @@ button, .button {
     background: #fffdf9;
 }
 
+.table {
+    display: grid;
+    gap: 10px;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+    align-items: center;
+    background: #fffdf9;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #f0e7d8;
+}
+
+.table-row.table-head {
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.inline {
+    display: inline;
+}
+
 .meta {
     color: var(--muted);
     font-size: 0.85rem;
@@ -169,6 +295,10 @@ button, .button {
 }
 
 @media (max-width: 720px) {
+    .auth-layout {
+        grid-template-columns: 1fr;
+    }
+
     .header {
         flex-direction: column;
         align-items: flex-start;
@@ -177,5 +307,9 @@ button, .button {
     .task-item {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .table-row {
+        grid-template-columns: 1fr;
     }
 }

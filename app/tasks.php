@@ -8,6 +8,12 @@ function fetch_users(): array
     return $stmt->fetchAll();
 }
 
+function fetch_users_with_roles(): array
+{
+    $stmt = db()->query('SELECT id, name, email, role, created_at FROM users ORDER BY name');
+    return $stmt->fetchAll();
+}
+
 function fetch_tasks_for_user(int $userId): array
 {
     $stmt = db()->prepare(
@@ -36,6 +42,18 @@ function fetch_tasks_created_by(int $userId): array
     return $stmt->fetchAll();
 }
 
+function fetch_all_tasks(): array
+{
+    $stmt = db()->query(
+        'SELECT t.*, u1.name AS created_by_name, u2.name AS assigned_to_name
+         FROM tasks t
+         JOIN users u1 ON u1.id = t.created_by
+         JOIN users u2 ON u2.id = t.assigned_to
+         ORDER BY t.created_at DESC'
+    );
+    return $stmt->fetchAll();
+}
+
 function create_task(int $creatorId, int $assigneeId, string $title, string $description): void
 {
     $stmt = db()->prepare(
@@ -58,4 +76,22 @@ function mark_task_complete(int $taskId, int $userId): void
          WHERE id = :id AND assigned_to = :user_id'
     );
     $stmt->execute([':id' => $taskId, ':user_id' => $userId]);
+}
+
+function update_user_role(int $userId, string $role): void
+{
+    $stmt = db()->prepare('UPDATE users SET role = :role WHERE id = :id');
+    $stmt->execute([':role' => $role, ':id' => $userId]);
+}
+
+function delete_user(int $userId): void
+{
+    $stmt = db()->prepare('DELETE FROM users WHERE id = :id');
+    $stmt->execute([':id' => $userId]);
+}
+
+function delete_task(int $taskId): void
+{
+    $stmt = db()->prepare('DELETE FROM tasks WHERE id = :id');
+    $stmt->execute([':id' => $taskId]);
 }

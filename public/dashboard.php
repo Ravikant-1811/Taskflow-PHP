@@ -38,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $users = fetch_users();
 $assignedTasks = fetch_tasks_for_user((int)$user['id']);
 $createdTasks = fetch_tasks_created_by((int)$user['id']);
+$isAdmin = is_admin($user);
 ?>
 <!doctype html>
 <html lang="en">
@@ -53,7 +54,12 @@ $createdTasks = fetch_tasks_created_by((int)$user['id']);
             <h1>Welcome, <?= htmlspecialchars($user['name']) ?></h1>
             <p class="subtitle">Assign tasks and track completion.</p>
         </div>
-        <a class="button secondary" href="/logout.php">Logout</a>
+        <div class="header-actions">
+            <?php if ($isAdmin): ?>
+                <a class="button secondary" href="/admin.php">Admin dashboard</a>
+            <?php endif; ?>
+            <a class="button secondary" href="/logout.php">Logout</a>
+        </div>
     </div>
 
     <?php if ($message): ?>
