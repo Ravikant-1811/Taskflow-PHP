@@ -95,3 +95,27 @@ function delete_task(int $taskId): void
     $stmt = db()->prepare('DELETE FROM tasks WHERE id = :id');
     $stmt->execute([':id' => $taskId]);
 }
+
+function update_task_admin(int $taskId, int $assigneeId, string $title, string $description, string $status): void
+{
+    $status = $status === 'completed' ? 'completed' : 'open';
+    $completedAt = $status === 'completed' ? date('Y-m-d H:i:s') : null;
+
+    $stmt = db()->prepare(
+        'UPDATE tasks
+         SET title = :title,
+             description = :description,
+             assigned_to = :assigned_to,
+             status = :status,
+             completed_at = :completed_at
+         WHERE id = :id'
+    );
+    $stmt->execute([
+        ':title' => $title,
+        ':description' => $description,
+        ':assigned_to' => $assigneeId,
+        ':status' => $status,
+        ':completed_at' => $completedAt,
+        ':id' => $taskId,
+    ]);
+}
