@@ -72,7 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $comments = fetch_comments($taskId);
 $activity = fetch_activity($taskId);
 $attachments = fetch_attachments($taskId);
-$backLink = is_manager($user) ? '/admin-tasks.php' : '/dashboard.php';
+if (is_manager($user) && !is_admin($user)) {
+    $backLink = '/manager-tasks.php';
+} elseif (is_admin($user)) {
+    $backLink = '/admin-tasks.php';
+} else {
+    $backLink = '/dashboard.php';
+}
 ?>
 <!doctype html>
 <html lang="en">

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/bootstrap.php';
 
-$admin = require_role(['admin', 'manager']);
+$admin = require_admin_page();
 $tenantId = (int)$admin['tenant_id'];
 $canAdmin = is_admin($admin);
 

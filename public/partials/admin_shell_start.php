@@ -8,6 +8,15 @@ if (!isset($activePage)) {
 if (!isset($canAdmin)) {
     $canAdmin = false;
 }
+if (!isset($dashboardUrl)) {
+    $dashboardUrl = '/admin.php';
+}
+if (!isset($tasksUrl)) {
+    $tasksUrl = '/admin-tasks.php';
+}
+if (!isset($reportsUrl)) {
+    $reportsUrl = '/admin-reports.php';
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -27,14 +36,14 @@ if (!isset($canAdmin)) {
             </div>
         </div>
         <nav class="sidebar-nav">
-            <a href="/admin.php" class="sidebar-link <?= $activePage === 'overview' ? 'active' : '' ?>">Overview</a>
+            <a href="<?= htmlspecialchars($dashboardUrl) ?>" class="sidebar-link <?= $activePage === 'overview' ? 'active' : '' ?>">Overview</a>
             <?php if ($canAdmin): ?>
                 <a href="/admin-users.php" class="sidebar-link <?= $activePage === 'users' ? 'active' : '' ?>">Users</a>
                 <a href="/admin-teams.php" class="sidebar-link <?= $activePage === 'teams' ? 'active' : '' ?>">Teams</a>
                 <a href="/admin-projects.php" class="sidebar-link <?= $activePage === 'projects' ? 'active' : '' ?>">Projects</a>
             <?php endif; ?>
-            <a href="/admin-tasks.php" class="sidebar-link <?= $activePage === 'tasks' ? 'active' : '' ?>">Tasks</a>
-            <a href="/admin-reports.php" class="sidebar-link <?= $activePage === 'reports' ? 'active' : '' ?>">Reports</a>
+            <a href="<?= htmlspecialchars($tasksUrl) ?>" class="sidebar-link <?= $activePage === 'tasks' ? 'active' : '' ?>">Tasks</a>
+            <a href="<?= htmlspecialchars($reportsUrl) ?>" class="sidebar-link <?= $activePage === 'reports' ? 'active' : '' ?>">Reports</a>
         </nav>
         <a class="button secondary sidebar-logout" href="/logout.php">Logout</a>
     </aside>

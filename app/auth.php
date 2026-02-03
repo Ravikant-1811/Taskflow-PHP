@@ -38,6 +38,36 @@ function require_admin(): array
     return $user;
 }
 
+function require_admin_page(): array
+{
+    $user = require_login();
+    $role = $user['role'] ?? 'user';
+    if ($role === 'admin') {
+        return $user;
+    }
+    if ($role === 'manager') {
+        header('Location: /manager.php');
+        exit;
+    }
+    header('Location: /dashboard.php');
+    exit;
+}
+
+function require_manager_page(): array
+{
+    $user = require_login();
+    $role = $user['role'] ?? 'user';
+    if ($role === 'manager') {
+        return $user;
+    }
+    if ($role === 'admin') {
+        header('Location: /admin.php');
+        exit;
+    }
+    header('Location: /dashboard.php');
+    exit;
+}
+
 function is_admin(?array $user): bool
 {
     if (!$user) {

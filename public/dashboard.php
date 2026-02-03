@@ -9,6 +9,17 @@ $message = '';
 $error = '';
 $tenantId = (int)$user['tenant_id'];
 $canManage = is_manager($user);
+$isAdmin = is_admin($user);
+
+$assignableUsers = [];
+if ($canManage) {
+    if ($isAdmin) {
+        $assignableUsers = fetch_users($tenantId);
+    } else {
+        $teamIds = fetch_team_ids_for_user((int)$user['id']);
+        $assignableUsers = fetch_users_for_teams($tenantId, $teamIds);
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validate($_POST['csrf_token'] ?? null);
@@ -26,8 +37,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $priority = $_POST['priority'] ?? 'medium';
             $dueDate = trim((string)($_POST['due_date'] ?? ''));
 
+            $assignableIds = array_map(fn($row) => (int)$row['id'], $assignableUsers);
+            $canAssignToUser = $isAdmin || in_array($assignedTo, $assignableIds, true);
+
             if ($title === '' || $assignedTo <= 0) {
                 $error = 'Title and assignee are required.';
+            } elseif (!$canAssignToUser) {
+                $error = 'Managers can only assign tasks to users in their teams.';
             } else {
                 $projectId = $projectId > 0 ? $projectId : null;
                 $dueDate = $dueDate !== '' ? $dueDate : null;
@@ -48,11 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$users = fetch_users($tenantId);
+$users = $assignableUsers;
 $projects = fetch_projects($tenantId);
 $assignedTasks = fetch_tasks_for_user($tenantId, (int)$user['id']);
 $createdTasks = fetch_tasks_created_by($tenantId, (int)$user['id']);
-$isAdmin = is_admin($user);
 ?>
 <!doctype html>
 <html lang="en">
@@ -72,6 +87,9 @@ $isAdmin = is_admin($user);
             <?php if ($isAdmin): ?>
                 <a class="button secondary" href="/admin.php">Admin dashboard</a>
             <?php endif; ?>
+            <?php if (!$isAdmin && $canManage): ?>
+                <a class="button secondary" href="/manager.php">Manager dashboard</a>
+            <?php endif; ?>
             <a class="button secondary" href="/logout.php">Logout</a>
         </div>
     </div>
@@ -86,6 +104,9 @@ $isAdmin = is_admin($user);
     <?php if ($canManage): ?>
         <section class="card">
             <h2>Create Task</h2>
+            <?php if (!$isAdmin && empty($users)): ?>
+                <p class="muted">You are not assigned to a team yet. Ask an admin to add you to a team to assign tasks to team members.</p>
+            <?php endif; ?>
             <form method="post">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                 <input type="hidden" name="action" value="create">
@@ -108,7 +129,7 @@ $isAdmin = is_admin($user);
                 </label>
                 <label>
                     Assign to
-                    <select name="assigned_to" required>
+                    <select name="assigned_to" required <?= (!$isAdmin && empty($users)) ? 'disabled' : '' ?>>
                         <option value="">Select a user</option>
                         <?php foreach ($users as $assignee): ?>
                             <option value="<?= (int)$assignee['id'] ?>">
@@ -129,7 +150,7 @@ $isAdmin = is_admin($user);
                     Due date
                     <input type="date" name="due_date">
                 </label>
-                <button type="submit">Assign task</button>
+                <button type="submit" <?= (!$isAdmin && empty($users)) ? 'disabled' : '' ?>>Assign task</button>
             </form>
         </section>
     <?php endif; ?>

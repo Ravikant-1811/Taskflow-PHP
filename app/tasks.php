@@ -106,6 +106,31 @@ function fetch_team_members(int $teamId): array
     return $stmt->fetchAll();
 }
 
+function fetch_team_ids_for_user(int $userId): array
+{
+    $stmt = db()->prepare('SELECT team_id FROM team_members WHERE user_id = :user_id');
+    $stmt->execute([':user_id' => $userId]);
+    return array_map(fn($row) => (int)$row['team_id'], $stmt->fetchAll());
+}
+
+function fetch_users_for_teams(int $tenantId, array $teamIds): array
+{
+    if (empty($teamIds)) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($teamIds), '?'));
+    $sql = "SELECT DISTINCT u.id, u.name, u.email
+            FROM users u
+            JOIN team_members tm ON tm.user_id = u.id
+            WHERE u.tenant_id = ?
+              AND tm.team_id IN ($placeholders)
+            ORDER BY u.name";
+    $stmt = db()->prepare($sql);
+    $stmt->execute(array_merge([$tenantId], $teamIds));
+    return $stmt->fetchAll();
+}
+
 function fetch_projects(int $tenantId): array
 {
     $stmt = db()->prepare(
@@ -175,6 +200,26 @@ function fetch_all_tasks(int $tenantId): array
          ORDER BY t.created_at DESC'
     );
     $stmt->execute([':tenant_id' => $tenantId]);
+    return $stmt->fetchAll();
+}
+
+function fetch_tasks_for_assignees(int $tenantId, array $assigneeIds): array
+{
+    if (empty($assigneeIds)) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($assigneeIds), '?'));
+    $sql = "SELECT t.*, u1.name AS created_by_name, u2.name AS assigned_to_name, p.name AS project_name
+            FROM tasks t
+            JOIN users u1 ON u1.id = t.created_by
+            JOIN users u2 ON u2.id = t.assigned_to
+            LEFT JOIN projects p ON p.id = t.project_id
+            WHERE t.tenant_id = ?
+              AND t.assigned_to IN ($placeholders)
+            ORDER BY t.created_at DESC";
+    $stmt = db()->prepare($sql);
+    $stmt->execute(array_merge([$tenantId], $assigneeIds));
     return $stmt->fetchAll();
 }
 
