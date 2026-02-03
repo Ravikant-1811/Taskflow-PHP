@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/bootstrap.php';
 
-if (current_user()) {
-    header('Location: /dashboard.php');
+$user = current_user();
+if ($user) {
+    header('Location: ' . (is_admin($user) ? '/admin.php' : '/dashboard.php'));
     exit;
 }
 

@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':role' => $role,
             ]);
             login_user((int)db()->lastInsertId());
-            header('Location: /dashboard.php');
+            header('Location: ' . ($role === 'admin' ? '/admin.php' : '/dashboard.php'));
             exit;
         }
     }

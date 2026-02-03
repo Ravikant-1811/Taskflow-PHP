@@ -69,7 +69,6 @@ $tasks = fetch_all_tasks();
             <p class="subtitle">Manage users and tasks.</p>
         </div>
         <div class="header-actions">
-            <a class="button secondary" href="/dashboard.php">User dashboard</a>
             <a class="button secondary" href="/logout.php">Logout</a>
         </div>
     </div>

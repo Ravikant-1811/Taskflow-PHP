@@ -21,7 +21,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($user && password_verify($password, $user['password_hash'])) {
             login_user((int)$user['id']);
-            header('Location: /dashboard.php');
+            $roleStmt = db()->prepare('SELECT role FROM users WHERE id = :id');
+            $roleStmt->execute([':id' => (int)$user['id']]);
+            $roleRow = $roleStmt->fetch();
+            $role = $roleRow['role'] ?? 'user';
+            header('Location: ' . ($role === 'admin' ? '/admin.php' : '/dashboard.php'));
             exit;
         }
 
