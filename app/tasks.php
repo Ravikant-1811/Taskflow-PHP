@@ -81,6 +81,18 @@ function add_team_member(int $teamId, int $userId, string $role = 'member'): voi
     $stmt->execute([':team_id' => $teamId, ':user_id' => $userId, ':role' => $role]);
 }
 
+function remove_team_member(int $teamId, int $userId): void
+{
+    $stmt = db()->prepare('DELETE FROM team_members WHERE team_id = :team_id AND user_id = :user_id');
+    $stmt->execute([':team_id' => $teamId, ':user_id' => $userId]);
+}
+
+function delete_team(int $tenantId, int $teamId): void
+{
+    $stmt = db()->prepare('DELETE FROM teams WHERE id = :id AND tenant_id = :tenant_id');
+    $stmt->execute([':id' => $teamId, ':tenant_id' => $tenantId]);
+}
+
 function fetch_team_members(int $teamId): array
 {
     $stmt = db()->prepare(

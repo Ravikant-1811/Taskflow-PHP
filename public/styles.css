@@ -34,6 +34,65 @@ a {
     max-width: 1200px;
 }
 
+.admin-layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+    max-width: 1280px;
+}
+
+.admin-content {
+    min-width: 0;
+}
+
+.sidebar {
+    position: sticky;
+    top: 24px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #fffdf7;
+    border: 1px solid #f0e7d8;
+    box-shadow: 0 12px 24px rgba(31, 31, 31, 0.08);
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-link {
+    padding: 10px 12px;
+    border-radius: 12px;
+    color: var(--ink);
+    background: #f7f1e8;
+}
+
+.sidebar-link:hover {
+    background: #efe7da;
+}
+
+.sidebar-link.active {
+    background: #1f6f78;
+    color: #fff;
+}
+
+.sidebar-logout {
+    margin-top: auto;
+    width: 100%;
+}
+
 .admin-header {
     background: linear-gradient(135deg, #fff4e3, #f4fbf8);
     border-radius: 18px;
@@ -279,6 +338,67 @@ a {
     border-radius: 14px;
     padding: 14px;
     background: #fffdf9;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.report-card {
+    border: 1px solid #f0e7d8;
+    border-radius: 14px;
+    padding: 14px;
+    background: #fffdf9;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.team-card {
+    border: 1px solid #f0e7d8;
+    border-radius: 14px;
+    padding: 14px;
+    background: #fffdf9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.team-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.team-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.member-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #f1ebe2;
+    font-size: 0.8rem;
+}
+
+.icon-button {
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #7b3b2a;
 }
 
 .stack {
@@ -651,5 +771,20 @@ button, .button {
 
     .modal-card {
         padding: 16px;
+    }
+
+    .admin-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 }
