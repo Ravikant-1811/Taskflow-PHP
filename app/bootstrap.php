@@ -11,3 +11,8 @@ require_once __DIR__ . '/tasks.php';
 
 // Initialize CSRF token for forms
 csrf_token();
+
+$config = require __DIR__ . '/config.php';
+if (!is_dir($config['upload_dir'])) {
+    mkdir($config['upload_dir'], 0755, true);
+}

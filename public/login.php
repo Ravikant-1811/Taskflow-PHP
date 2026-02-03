@@ -10,26 +10,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validate($_POST['csrf_token'] ?? null);
 
     $email = trim((string)($_POST['email'] ?? ''));
+    $companySlug = strtolower(trim((string)($_POST['company_slug'] ?? '')));
     $password = (string)($_POST['password'] ?? '');
 
-    if ($email === '' || $password === '') {
-        $error = 'Please provide email and password.';
+    if ($email === '' || $password === '' || $companySlug === '') {
+        $error = 'Please provide company code, email, and password.';
     } else {
-        $stmt = db()->prepare('SELECT id, password_hash FROM users WHERE email = :email');
-        $stmt->execute([':email' => $email]);
-        $user = $stmt->fetch();
+        $tenant = fetch_tenant_by_slug($companySlug);
+        if (!$tenant) {
+            $error = 'Company code not found.';
+        } else {
+            $stmt = db()->prepare('SELECT id, password_hash FROM users WHERE tenant_id = :tenant_id AND email = :email');
+            $stmt->execute([':tenant_id' => (int)$tenant['id'], ':email' => $email]);
+            $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password_hash'])) {
-            login_user((int)$user['id']);
-            $roleStmt = db()->prepare('SELECT role FROM users WHERE id = :id');
-            $roleStmt->execute([':id' => (int)$user['id']]);
-            $roleRow = $roleStmt->fetch();
-            $role = $roleRow['role'] ?? 'user';
-            header('Location: ' . ($role === 'admin' ? '/admin.php' : '/dashboard.php'));
-            exit;
+            if ($user && password_verify($password, $user['password_hash'])) {
+                login_user((int)$user['id']);
+                $roleStmt = db()->prepare('SELECT role FROM users WHERE id = :id');
+                $roleStmt->execute([':id' => (int)$user['id']]);
+                $roleRow = $roleStmt->fetch();
+                $role = $roleRow['role'] ?? 'user';
+                $isManager = in_array($role, ['admin', 'manager'], true);
+                header('Location: ' . ($isManager ? '/admin.php' : '/dashboard.php'));
+                exit;
+            }
+
+            $error = 'Invalid login details.';
         }
-
-        $error = 'Invalid login details.';
     }
 }
 ?>
@@ -47,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span class="brand-mark">TF</span>
             <div>
                 <h1>TaskFlow</h1>
-                <p class="subtitle">Plan, assign, and complete work together.</p>
+        <p class="subtitle">Plan, assign, and complete work across your company.</p>
             </div>
         </div>
         <div class="hero-card">
@@ -59,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li>Simple, secure session login</li>
             </ul>
         </div>
-        <p class="admin-note">Admins use the same login. First user is automatically an admin.</p>
+        <p class="admin-note">Use your company code to sign in. Admins and managers use the same login.</p>
     </section>
 
     <section class="auth-form">
@@ -72,6 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="post" class="card">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+            <label>
+                Company code
+                <input type="text" name="company_slug" placeholder="acme-co" required>
+            </label>
             <label>
                 Email
                 <input type="email" name="email" required>

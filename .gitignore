@@ -1,4 +1,5 @@
 /storage/app.db
 /storage/*.sqlite
 /storage/*.db
+/storage/uploads
 .DS_Store

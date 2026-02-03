@@ -1,4 +1,4 @@
-# API (Page Endpoints)
+# App Pages
 
 ## Public
 - `GET /login.php`
@@ -8,11 +8,9 @@
 
 ## Authenticated
 - `GET /dashboard.php`
-- `POST /dashboard.php` (create / complete)
+- `POST /dashboard.php` (create task / mark done)
+- `GET /admin.php` (admin/manager)
+- `POST /admin.php` (users/teams/projects/tasks)
+- `GET /task.php?id=` (task details)
+- `POST /task.php?id=` (comments/attachments)
 - `GET /logout.php`
-
-## Actions (POST /dashboard.php)
-- `action=create`
-  - `title`, `description`, `assigned_to`
-- `action=complete`
-  - `task_id`

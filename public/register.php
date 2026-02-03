@@ -11,37 +11,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $name = trim((string)($_POST['name'] ?? ''));
     $email = trim((string)($_POST['email'] ?? ''));
+    $company = trim((string)($_POST['company'] ?? ''));
+    $companySlug = strtolower(trim((string)($_POST['company_slug'] ?? '')));
     $password = (string)($_POST['password'] ?? '');
 
-    if ($name === '' || $email === '' || $password === '') {
+    if ($name === '' || $email === '' || $password === '' || $company === '' || $companySlug === '') {
         $error = 'All fields are required.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email.';
     } elseif (strlen($password) < 6) {
         $error = 'Password must be at least 6 characters.';
     } else {
-        $stmt = db()->prepare('SELECT id FROM users WHERE email = :email');
-        $stmt->execute([':email' => $email]);
-        if ($stmt->fetch()) {
-            $error = 'Email already registered.';
+        if (!preg_match('/^[a-z0-9-]+$/', $companySlug)) {
+            $error = 'Company code can only include lowercase letters, numbers, and dashes.';
         } else {
-            $countStmt = db()->query('SELECT COUNT(*) AS total FROM users');
-            $total = (int)($countStmt->fetch()['total'] ?? 0);
-            $role = $total === 0 ? 'admin' : 'user';
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = db()->prepare(
-                'INSERT INTO users (name, email, password_hash, role)
-                 VALUES (:name, :email, :password_hash, :role)'
-            );
-            $stmt->execute([
-                ':name' => $name,
-                ':email' => $email,
-                ':password_hash' => $hash,
-                ':role' => $role,
-            ]);
-            login_user((int)db()->lastInsertId());
-            header('Location: ' . ($role === 'admin' ? '/admin.php' : '/dashboard.php'));
-            exit;
+            $tenant = fetch_tenant_by_slug($companySlug);
+            if (!$tenant) {
+                $tenantId = create_tenant($company, $companySlug);
+                $role = 'admin';
+            } else {
+                $tenantId = (int)$tenant['id'];
+                $role = 'user';
+            }
+
+            $stmt = db()->prepare('SELECT id FROM users WHERE tenant_id = :tenant_id AND email = :email');
+            $stmt->execute([':tenant_id' => $tenantId, ':email' => $email]);
+            if ($stmt->fetch()) {
+                $error = 'Email already registered for this company.';
+            } else {
+                create_user($tenantId, $name, $email, $password, $role);
+                $stmt = db()->prepare('SELECT id FROM users WHERE tenant_id = :tenant_id AND email = :email');
+                $stmt->execute([':tenant_id' => $tenantId, ':email' => $email]);
+                $user = $stmt->fetch();
+                if ($user) {
+                    login_user((int)$user['id']);
+                    $isManager = in_array($role, ['admin', 'manager'], true);
+                    header('Location: ' . ($isManager ? '/admin.php' : '/dashboard.php'));
+                    exit;
+                }
+                $error = 'Unable to create account.';
+            }
         }
     }
 }
@@ -60,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span class="brand-mark">TF</span>
             <div>
                 <h1>TaskFlow</h1>
-                <p class="subtitle">Bring clarity to team work in minutes.</p>
+        <p class="subtitle">Create your company workspace in minutes.</p>
             </div>
         </div>
         <div class="hero-card">
@@ -72,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li>Secure session-based login</li>
             </ul>
         </div>
-        <p class="admin-note">The first account created becomes the admin. You can promote others later.</p>
+        <p class="admin-note">The first account for a company becomes the admin. Use the same company code to invite others.</p>
     </section>
 
     <section class="auth-form">
@@ -88,6 +97,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label>
                 Full name
                 <input type="text" name="name" required>
+            </label>
+            <label>
+                Company name
+                <input type="text" name="company" required>
+            </label>
+            <label>
+                Company code
+                <input type="text" name="company_slug" placeholder="acme-co" required>
             </label>
             <label>
                 Email

@@ -6,7 +6,7 @@ require_once __DIR__ . '/../app/bootstrap.php';
 
 $user = current_user();
 if ($user) {
-    header('Location: ' . (is_admin($user) ? '/admin.php' : '/dashboard.php'));
+    header('Location: ' . (is_manager($user) ? '/admin.php' : '/dashboard.php'));
     exit;
 }
 

@@ -7,6 +7,8 @@ require_once __DIR__ . '/../app/bootstrap.php';
 $user = require_login();
 $message = '';
 $error = '';
+$tenantId = (int)$user['tenant_id'];
+$canManage = is_manager($user);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validate($_POST['csrf_token'] ?? null);
@@ -14,30 +16,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'create') {
-        $title = trim((string)($_POST['title'] ?? ''));
-        $description = trim((string)($_POST['description'] ?? ''));
-        $assignedTo = (int)($_POST['assigned_to'] ?? 0);
-
-        if ($title === '' || $assignedTo <= 0) {
-            $error = 'Title and assignee are required.';
+        if (!$canManage) {
+            $error = 'You do not have permission to create tasks.';
         } else {
-            create_task((int)$user['id'], $assignedTo, $title, $description);
-            $message = 'Task created and assigned.';
+            $title = trim((string)($_POST['title'] ?? ''));
+            $description = trim((string)($_POST['description'] ?? ''));
+            $assignedTo = (int)($_POST['assigned_to'] ?? 0);
+            $projectId = (int)($_POST['project_id'] ?? 0);
+            $priority = $_POST['priority'] ?? 'medium';
+            $dueDate = trim((string)($_POST['due_date'] ?? ''));
+
+            if ($title === '' || $assignedTo <= 0) {
+                $error = 'Title and assignee are required.';
+            } else {
+                $projectId = $projectId > 0 ? $projectId : null;
+                $dueDate = $dueDate !== '' ? $dueDate : null;
+                $taskId = create_task($tenantId, (int)$user['id'], $assignedTo, $projectId, $title, $description, $priority, $dueDate);
+                log_activity($taskId, (int)$user['id'], 'Created task');
+                $message = 'Task created and assigned.';
+            }
         }
     }
 
     if ($action === 'complete') {
         $taskId = (int)($_POST['task_id'] ?? 0);
         if ($taskId > 0) {
-            mark_task_complete($taskId, (int)$user['id']);
+            mark_task_complete($tenantId, $taskId, (int)$user['id']);
+            log_activity($taskId, (int)$user['id'], 'Marked task as done');
             $message = 'Task marked as completed.';
         }
     }
 }
 
-$users = fetch_users();
-$assignedTasks = fetch_tasks_for_user((int)$user['id']);
-$createdTasks = fetch_tasks_created_by((int)$user['id']);
+$users = fetch_users($tenantId);
+$projects = fetch_projects($tenantId);
+$assignedTasks = fetch_tasks_for_user($tenantId, (int)$user['id']);
+$createdTasks = fetch_tasks_created_by($tenantId, (int)$user['id']);
 $isAdmin = is_admin($user);
 ?>
 <!doctype html>
@@ -69,33 +83,56 @@ $isAdmin = is_admin($user);
         <div class="alert"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <section class="card">
-        <h2>Create Task</h2>
-        <form method="post">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
-            <input type="hidden" name="action" value="create">
-            <label>
-                Title
-                <input type="text" name="title" required>
-            </label>
-            <label>
-                Description
-                <textarea name="description" rows="3"></textarea>
-            </label>
-            <label>
-                Assign to
-                <select name="assigned_to" required>
-                    <option value="">Select a user</option>
-                    <?php foreach ($users as $assignee): ?>
-                        <option value="<?= (int)$assignee['id'] ?>">
-                            <?= htmlspecialchars($assignee['name']) ?> (<?= htmlspecialchars($assignee['email']) ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
-            <button type="submit">Assign task</button>
-        </form>
-    </section>
+    <?php if ($canManage): ?>
+        <section class="card">
+            <h2>Create Task</h2>
+            <form method="post">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+                <input type="hidden" name="action" value="create">
+                <label>
+                    Title
+                    <input type="text" name="title" required>
+                </label>
+                <label>
+                    Description
+                    <textarea name="description" rows="3"></textarea>
+                </label>
+                <label>
+                    Project
+                    <select name="project_id">
+                        <option value="">No project</option>
+                        <?php foreach ($projects as $project): ?>
+                            <option value="<?= (int)$project['id'] ?>"><?= htmlspecialchars($project['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label>
+                    Assign to
+                    <select name="assigned_to" required>
+                        <option value="">Select a user</option>
+                        <?php foreach ($users as $assignee): ?>
+                            <option value="<?= (int)$assignee['id'] ?>">
+                                <?= htmlspecialchars($assignee['name']) ?> (<?= htmlspecialchars($assignee['email']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label>
+                    Priority
+                    <select name="priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </label>
+                <label>
+                    Due date
+                    <input type="date" name="due_date">
+                </label>
+                <button type="submit">Assign task</button>
+            </form>
+        </section>
+    <?php endif; ?>
 
     <section class="grid">
         <div class="card">
@@ -112,11 +149,17 @@ $isAdmin = is_admin($user);
                                 <?php if ($task['description']): ?>
                                     <p><?= nl2br(htmlspecialchars($task['description'])) ?></p>
                                 <?php endif; ?>
-                                <span class="status <?= $task['status'] === 'completed' ? 'done' : 'open' ?>">
-                                    <?= ucfirst($task['status']) ?>
+                                <div class="meta">
+                                    <?= htmlspecialchars($task['project_name'] ?? 'No project') ?> · Priority <?= ucfirst($task['priority']) ?>
+                                    <?php if (!empty($task['due_date'])): ?>
+                                        · Due <?= htmlspecialchars($task['due_date']) ?>
+                                    <?php endif; ?>
+                                </div>
+                                <span class="status <?= $task['status'] === 'done' ? 'done' : ($task['status'] === 'in_progress' ? 'progress' : 'open') ?>">
+                                    <?= $task['status'] === 'in_progress' ? 'In Progress' : ucfirst($task['status']) ?>
                                 </span>
                             </div>
-                            <?php if ($task['status'] !== 'completed'): ?>
+                            <?php if ($task['status'] !== 'done'): ?>
                                 <form method="post">
                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                     <input type="hidden" name="action" value="complete">
@@ -126,6 +169,7 @@ $isAdmin = is_admin($user);
                             <?php else: ?>
                                 <span class="muted">Completed <?= htmlspecialchars($task['completed_at'] ?? '') ?></span>
                             <?php endif; ?>
+                            <a class="button small secondary" href="/task.php?id=<?= (int)$task['id'] ?>">View</a>
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -143,13 +187,20 @@ $isAdmin = is_admin($user);
                             <div>
                                 <strong><?= htmlspecialchars($task['title']) ?></strong>
                                 <div class="meta">Assigned to <?= htmlspecialchars($task['assigned_to_name']) ?> · <?= htmlspecialchars($task['created_at']) ?></div>
-                                <span class="status <?= $task['status'] === 'completed' ? 'done' : 'open' ?>">
-                                    <?= ucfirst($task['status']) ?>
+                                <div class="meta">
+                                    <?= htmlspecialchars($task['project_name'] ?? 'No project') ?> · Priority <?= ucfirst($task['priority']) ?>
+                                    <?php if (!empty($task['due_date'])): ?>
+                                        · Due <?= htmlspecialchars($task['due_date']) ?>
+                                    <?php endif; ?>
+                                </div>
+                                <span class="status <?= $task['status'] === 'done' ? 'done' : ($task['status'] === 'in_progress' ? 'progress' : 'open') ?>">
+                                    <?= $task['status'] === 'in_progress' ? 'In Progress' : ucfirst($task['status']) ?>
                                 </span>
                             </div>
-                            <?php if ($task['status'] === 'completed'): ?>
+                            <?php if ($task['status'] === 'done'): ?>
                                 <span class="muted">Completed <?= htmlspecialchars($task['completed_at'] ?? '') ?></span>
                             <?php endif; ?>
+                            <a class="button small secondary" href="/task.php?id=<?= (int)$task['id'] ?>">View</a>
                         </li>
                     <?php endforeach; ?>
                 </ul>
