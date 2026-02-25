@@ -101,6 +101,25 @@ CREATE TABLE IF NOT EXISTS task_attachments (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS daily_reports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tenant_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  report_date TEXT NOT NULL,
+  start_time TEXT,
+  end_time TEXT,
+  total_hours REAL NOT NULL DEFAULT 0,
+  work_summary TEXT NOT NULL DEFAULT '',
+  blockers TEXT NOT NULL DEFAULT '',
+  next_plan TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'submitted',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(user_id, report_date),
+  FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_users_tenant ON users(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_teams_tenant ON teams(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_projects_tenant ON projects(tenant_id);
@@ -110,3 +129,5 @@ CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
 CREATE INDEX IF NOT EXISTS idx_comments_task ON task_comments(task_id);
 CREATE INDEX IF NOT EXISTS idx_activity_task ON task_activity(task_id);
+CREATE INDEX IF NOT EXISTS idx_daily_reports_tenant ON daily_reports(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_daily_reports_user_date ON daily_reports(user_id, report_date);

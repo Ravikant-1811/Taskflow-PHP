@@ -30,5 +30,34 @@ function db(): PDO
         $pdo->exec($schema);
     }
 
+    ensure_schema_updates($pdo);
+
     return $pdo;
+}
+
+function ensure_schema_updates(PDO $pdo): void
+{
+    // Lightweight runtime migrations for existing databases.
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS daily_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tenant_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            report_date TEXT NOT NULL,
+            start_time TEXT,
+            end_time TEXT,
+            total_hours REAL NOT NULL DEFAULT 0,
+            work_summary TEXT NOT NULL DEFAULT "",
+            blockers TEXT NOT NULL DEFAULT "",
+            next_plan TEXT NOT NULL DEFAULT "",
+            status TEXT NOT NULL DEFAULT "submitted",
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, report_date),
+            FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )'
+    );
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_daily_reports_tenant ON daily_reports(tenant_id)');
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_daily_reports_user_date ON daily_reports(user_id, report_date)');
 }

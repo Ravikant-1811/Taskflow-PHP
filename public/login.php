@@ -30,8 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $roleStmt->execute([':id' => (int)$user['id']]);
                 $roleRow = $roleStmt->fetch();
                 $role = $roleRow['role'] ?? 'user';
-                $isManager = in_array($role, ['admin', 'manager'], true);
-                header('Location: ' . ($isManager ? '/admin.php' : '/dashboard.php'));
+                if ($role === 'admin') {
+                    header('Location: /admin.php');
+                } elseif ($role === 'manager') {
+                    header('Location: /manager.php');
+                } else {
+                    header('Location: /dashboard.php');
+                }
                 exit;
             }
 

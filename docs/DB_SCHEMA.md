@@ -72,3 +72,18 @@
 - `file_path`
 - `file_size`
 - `created_at`
+
+## daily_reports
+- `id` (PK)
+- `tenant_id` (FK)
+- `user_id` (FK)
+- `report_date` (unique per user per date)
+- `start_time`
+- `end_time`
+- `total_hours`
+- `work_summary`
+- `blockers`
+- `next_plan`
+- `status`
+- `created_at`
+- `updated_at`

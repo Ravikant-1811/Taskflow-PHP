@@ -18,9 +18,15 @@
 - Task moves through **Open → In Progress → Done**.
 - Assignees can mark tasks as done.
 
-## 5. Collaboration
+## 5. Remote Daily Reporting
+- Each employee submits one daily report per date.
+- Report captures start time, end time, total hours, work summary, blockers, and next-day plan.
+- Managers review team submissions and pending employees.
+- Admins review company-wide daily reporting.
+
+## 6. Collaboration
 - Comments and attachments are added on the task detail page.
 - Activity log tracks changes and updates.
 
-## 6. Reporting
+## 7. Reporting
 - Dashboard shows task counts, overdue, and due-soon tasks.

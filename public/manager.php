@@ -34,6 +34,10 @@ require __DIR__ . '/partials/admin_shell_start.php';
             <h1>Manager Dashboard</h1>
             <p class="subtitle">Manage your team workload and track progress.</p>
         </div>
+        <div class="header-actions">
+            <a class="button secondary" href="/daily-report.php">My daily report</a>
+            <a class="button secondary" href="/manager-daily-reports.php">Team daily reports</a>
+        </div>
     </div>
 
     <?php if (empty($teamIds)): ?>

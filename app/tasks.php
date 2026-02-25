@@ -371,3 +371,108 @@ function fetch_attachments(int $taskId): array
     $stmt->execute([':task_id' => $taskId]);
     return $stmt->fetchAll();
 }
+
+function upsert_daily_report(
+    int $tenantId,
+    int $userId,
+    string $reportDate,
+    ?string $startTime,
+    ?string $endTime,
+    float $totalHours,
+    string $workSummary,
+    string $blockers,
+    string $nextPlan
+): void {
+    $stmt = db()->prepare(
+        'INSERT INTO daily_reports (
+            tenant_id, user_id, report_date, start_time, end_time, total_hours,
+            work_summary, blockers, next_plan, status, created_at, updated_at
+        ) VALUES (
+            :tenant_id, :user_id, :report_date, :start_time, :end_time, :total_hours,
+            :work_summary, :blockers, :next_plan, "submitted", datetime("now"), datetime("now")
+        )
+        ON CONFLICT(user_id, report_date) DO UPDATE SET
+            start_time = excluded.start_time,
+            end_time = excluded.end_time,
+            total_hours = excluded.total_hours,
+            work_summary = excluded.work_summary,
+            blockers = excluded.blockers,
+            next_plan = excluded.next_plan,
+            status = "submitted",
+            updated_at = datetime("now")'
+    );
+    $stmt->execute([
+        ':tenant_id' => $tenantId,
+        ':user_id' => $userId,
+        ':report_date' => $reportDate,
+        ':start_time' => $startTime,
+        ':end_time' => $endTime,
+        ':total_hours' => $totalHours,
+        ':work_summary' => $workSummary,
+        ':blockers' => $blockers,
+        ':next_plan' => $nextPlan,
+    ]);
+}
+
+function fetch_daily_report_for_user_date(int $tenantId, int $userId, string $reportDate): ?array
+{
+    $stmt = db()->prepare(
+        'SELECT *
+         FROM daily_reports
+         WHERE tenant_id = :tenant_id AND user_id = :user_id AND report_date = :report_date'
+    );
+    $stmt->execute([
+        ':tenant_id' => $tenantId,
+        ':user_id' => $userId,
+        ':report_date' => $reportDate,
+    ]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+}
+
+function fetch_daily_reports_for_tenant(int $tenantId, string $reportDate): array
+{
+    $stmt = db()->prepare(
+        'SELECT dr.*, u.name AS user_name, u.email AS user_email, u.role AS user_role
+         FROM daily_reports dr
+         JOIN users u ON u.id = dr.user_id
+         WHERE dr.tenant_id = :tenant_id
+           AND dr.report_date = :report_date
+         ORDER BY u.name'
+    );
+    $stmt->execute([
+        ':tenant_id' => $tenantId,
+        ':report_date' => $reportDate,
+    ]);
+    return $stmt->fetchAll();
+}
+
+function fetch_daily_reports_for_users(array $userIds, string $reportDate): array
+{
+    if (empty($userIds)) {
+        return [];
+    }
+    $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+    $sql = "SELECT dr.*, u.name AS user_name, u.email AS user_email, u.role AS user_role
+            FROM daily_reports dr
+            JOIN users u ON u.id = dr.user_id
+            WHERE dr.user_id IN ($placeholders)
+              AND dr.report_date = ?
+            ORDER BY u.name";
+    $stmt = db()->prepare($sql);
+    $stmt->execute(array_merge($userIds, [$reportDate]));
+    return $stmt->fetchAll();
+}
+
+function calculate_hours_from_times(?string $startTime, ?string $endTime): float
+{
+    if (!$startTime || !$endTime) {
+        return 0.0;
+    }
+    $start = strtotime($startTime);
+    $end = strtotime($endTime);
+    if ($start === false || $end === false || $end <= $start) {
+        return 0.0;
+    }
+    return round(($end - $start) / 3600, 2);
+}

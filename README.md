@@ -1,6 +1,6 @@
 # TaskFlow (Company Task Management)
 
-A multi-tenant company task management tool with roles, teams, projects, task workflow, comments, attachments, and reporting.
+A multi-tenant company task management tool for remote teams with roles, teams, projects, task workflow, daily reports, comments, attachments, and reporting.
 
 ## Features
 - Multi-company (tenants) with company code login
@@ -9,6 +9,8 @@ A multi-tenant company task management tool with roles, teams, projects, task wo
 - Projects with optional team assignment
 - Task workflow: Open → In Progress → Done
 - Priorities and due dates
+- Employee daily report (time + summary + blockers + next plan)
+- Manager and admin daily report review dashboards
 - Comments, attachments, and activity log
 - Admin/Manager dashboard with reporting
 

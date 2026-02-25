@@ -28,6 +28,9 @@ require __DIR__ . '/partials/admin_shell_start.php';
             <h1>Reports</h1>
             <p class="subtitle">Company task health metrics.</p>
         </div>
+        <div class="header-actions">
+            <a class="button secondary" href="/admin-daily-reports.php">Daily reports</a>
+        </div>
     </div>
 
     <section class="admin-summary">

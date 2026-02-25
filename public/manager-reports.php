@@ -35,6 +35,9 @@ require __DIR__ . '/partials/admin_shell_start.php';
             <h1>Team Reports</h1>
             <p class="subtitle">Task health metrics for your team.</p>
         </div>
+        <div class="header-actions">
+            <a class="button secondary" href="/manager-daily-reports.php">Daily reports</a>
+        </div>
     </div>
 
     <section class="admin-summary">
