@@ -27,6 +27,8 @@ $activePage = 'reports';
 $dashboardUrl = '/manager.php';
 $tasksUrl = '/manager-tasks.php';
 $reportsUrl = '/manager-reports.php';
+$hrUrl = '/manager-hr.php';
+$aiUrl = '/ai-assistant.php';
 require __DIR__ . '/partials/admin_shell_start.php';
 ?>
     <div class="header admin-header">
@@ -37,6 +39,7 @@ require __DIR__ . '/partials/admin_shell_start.php';
         </div>
         <div class="header-actions">
             <a class="button secondary" href="/manager-daily-reports.php">Daily reports</a>
+            <a class="button secondary" href="/manager-hr.php">Team HR</a>
         </div>
     </div>
 

@@ -45,6 +45,8 @@ $activePage = 'tasks';
 $dashboardUrl = '/manager.php';
 $tasksUrl = '/manager-tasks.php';
 $reportsUrl = '/manager-reports.php';
+$hrUrl = '/manager-hr.php';
+$aiUrl = '/ai-assistant.php';
 require __DIR__ . '/partials/admin_shell_start.php';
 ?>
     <div class="header admin-header">

@@ -85,11 +85,14 @@ $createdTasks = fetch_tasks_created_by($tenantId, (int)$user['id']);
         </div>
         <div class="header-actions">
             <a class="button secondary" href="/daily-report.php">Daily report</a>
+            <a class="button secondary" href="/my-hr.php">My HR</a>
             <?php if ($isAdmin): ?>
                 <a class="button secondary" href="/admin.php">Admin dashboard</a>
+                <a class="button secondary" href="/ai-assistant.php">AI assistant</a>
             <?php endif; ?>
             <?php if (!$isAdmin && $canManage): ?>
                 <a class="button secondary" href="/manager.php">Manager dashboard</a>
+                <a class="button secondary" href="/ai-assistant.php">AI assistant</a>
             <?php endif; ?>
             <a class="button secondary" href="/logout.php">Logout</a>
         </div>

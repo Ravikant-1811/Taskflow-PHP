@@ -131,3 +131,42 @@ CREATE INDEX IF NOT EXISTS idx_comments_task ON task_comments(task_id);
 CREATE INDEX IF NOT EXISTS idx_activity_task ON task_activity(task_id);
 CREATE INDEX IF NOT EXISTS idx_daily_reports_tenant ON daily_reports(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_daily_reports_user_date ON daily_reports(user_id, report_date);
+
+CREATE TABLE IF NOT EXISTS employee_profiles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tenant_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL UNIQUE,
+  department TEXT NOT NULL DEFAULT '',
+  designation TEXT NOT NULL DEFAULT '',
+  employment_type TEXT NOT NULL DEFAULT 'full_time',
+  location TEXT NOT NULL DEFAULT '',
+  manager_user_id INTEGER,
+  joining_date TEXT,
+  weekly_hour_target REAL NOT NULL DEFAULT 40,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (manager_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS leave_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tenant_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  leave_type TEXT NOT NULL DEFAULT 'paid',
+  start_date TEXT NOT NULL,
+  end_date TEXT NOT NULL,
+  total_days REAL NOT NULL DEFAULT 1,
+  reason TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'pending',
+  decided_by INTEGER,
+  decided_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (decided_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_employee_profiles_tenant ON employee_profiles(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_leave_requests_tenant_status ON leave_requests(tenant_id, status);

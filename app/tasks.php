@@ -476,3 +476,155 @@ function calculate_hours_from_times(?string $startTime, ?string $endTime): float
     }
     return round(($end - $start) / 3600, 2);
 }
+
+function upsert_employee_profile(
+    int $tenantId,
+    int $userId,
+    string $department,
+    string $designation,
+    string $employmentType,
+    string $location,
+    ?int $managerUserId,
+    ?string $joiningDate,
+    float $weeklyHourTarget
+): void {
+    $stmt = db()->prepare(
+        'INSERT INTO employee_profiles (
+            tenant_id, user_id, department, designation, employment_type, location,
+            manager_user_id, joining_date, weekly_hour_target, created_at, updated_at
+        ) VALUES (
+            :tenant_id, :user_id, :department, :designation, :employment_type, :location,
+            :manager_user_id, :joining_date, :weekly_hour_target, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+        ON CONFLICT(user_id) DO UPDATE SET
+            department = excluded.department,
+            designation = excluded.designation,
+            employment_type = excluded.employment_type,
+            location = excluded.location,
+            manager_user_id = excluded.manager_user_id,
+            joining_date = excluded.joining_date,
+            weekly_hour_target = excluded.weekly_hour_target,
+            updated_at = CURRENT_TIMESTAMP'
+    );
+    $stmt->execute([
+        ':tenant_id' => $tenantId,
+        ':user_id' => $userId,
+        ':department' => $department,
+        ':designation' => $designation,
+        ':employment_type' => $employmentType,
+        ':location' => $location,
+        ':manager_user_id' => $managerUserId,
+        ':joining_date' => $joiningDate,
+        ':weekly_hour_target' => $weeklyHourTarget,
+    ]);
+}
+
+function fetch_employee_profiles(int $tenantId): array
+{
+    $stmt = db()->prepare(
+        'SELECT ep.*, u.name AS user_name, u.email AS user_email, u.role AS user_role, m.name AS manager_name
+         FROM employee_profiles ep
+         JOIN users u ON u.id = ep.user_id
+         LEFT JOIN users m ON m.id = ep.manager_user_id
+         WHERE ep.tenant_id = :tenant_id
+         ORDER BY u.name'
+    );
+    $stmt->execute([':tenant_id' => $tenantId]);
+    return $stmt->fetchAll();
+}
+
+function fetch_employee_profile_for_user(int $tenantId, int $userId): ?array
+{
+    $stmt = db()->prepare(
+        'SELECT ep.*, u.name AS user_name, u.email AS user_email, u.role AS user_role, m.name AS manager_name
+         FROM employee_profiles ep
+         JOIN users u ON u.id = ep.user_id
+         LEFT JOIN users m ON m.id = ep.manager_user_id
+         WHERE ep.tenant_id = :tenant_id AND ep.user_id = :user_id'
+    );
+    $stmt->execute([':tenant_id' => $tenantId, ':user_id' => $userId]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+}
+
+function create_leave_request(
+    int $tenantId,
+    int $userId,
+    string $leaveType,
+    string $startDate,
+    string $endDate,
+    string $reason
+): void {
+    $days = max(1.0, (float)((strtotime($endDate) - strtotime($startDate)) / 86400 + 1));
+    $stmt = db()->prepare(
+        'INSERT INTO leave_requests (
+            tenant_id, user_id, leave_type, start_date, end_date, total_days, reason, status, created_at
+        ) VALUES (
+            :tenant_id, :user_id, :leave_type, :start_date, :end_date, :total_days, :reason, "pending", CURRENT_TIMESTAMP
+        )'
+    );
+    $stmt->execute([
+        ':tenant_id' => $tenantId,
+        ':user_id' => $userId,
+        ':leave_type' => $leaveType,
+        ':start_date' => $startDate,
+        ':end_date' => $endDate,
+        ':total_days' => $days,
+        ':reason' => $reason,
+    ]);
+}
+
+function fetch_leave_requests_for_tenant(int $tenantId, ?string $status = null): array
+{
+    $sql = 'SELECT lr.*, u.name AS user_name, u.email AS user_email, d.name AS decided_by_name
+            FROM leave_requests lr
+            JOIN users u ON u.id = lr.user_id
+            LEFT JOIN users d ON d.id = lr.decided_by
+            WHERE lr.tenant_id = :tenant_id';
+    if ($status !== null && $status !== '') {
+        $sql .= ' AND lr.status = :status';
+    }
+    $sql .= ' ORDER BY lr.created_at DESC';
+    $stmt = db()->prepare($sql);
+    $params = [':tenant_id' => $tenantId];
+    if ($status !== null && $status !== '') {
+        $params[':status'] = $status;
+    }
+    $stmt->execute($params);
+    return $stmt->fetchAll();
+}
+
+function fetch_leave_requests_for_users(array $userIds): array
+{
+    if (empty($userIds)) {
+        return [];
+    }
+    $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+    $sql = "SELECT lr.*, u.name AS user_name, u.email AS user_email, d.name AS decided_by_name
+            FROM leave_requests lr
+            JOIN users u ON u.id = lr.user_id
+            LEFT JOIN users d ON d.id = lr.decided_by
+            WHERE lr.user_id IN ($placeholders)
+            ORDER BY lr.created_at DESC";
+    $stmt = db()->prepare($sql);
+    $stmt->execute($userIds);
+    return $stmt->fetchAll();
+}
+
+function update_leave_request_status(int $tenantId, int $leaveId, string $status, int $decidedByUserId): void
+{
+    $safeStatus = in_array($status, ['approved', 'rejected', 'pending'], true) ? $status : 'pending';
+    $stmt = db()->prepare(
+        'UPDATE leave_requests
+         SET status = :status,
+             decided_by = :decided_by,
+             decided_at = CURRENT_TIMESTAMP
+         WHERE id = :id AND tenant_id = :tenant_id'
+    );
+    $stmt->execute([
+        ':status' => $safeStatus,
+        ':decided_by' => $decidedByUserId,
+        ':id' => $leaveId,
+        ':tenant_id' => $tenantId,
+    ]);
+}

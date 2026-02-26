@@ -17,6 +17,12 @@ if (!isset($tasksUrl)) {
 if (!isset($reportsUrl)) {
     $reportsUrl = '/admin-reports.php';
 }
+if (!isset($hrUrl)) {
+    $hrUrl = '/admin-hr.php';
+}
+if (!isset($aiUrl)) {
+    $aiUrl = '/ai-assistant.php';
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -44,6 +50,8 @@ if (!isset($reportsUrl)) {
             <?php endif; ?>
             <a href="<?= htmlspecialchars($tasksUrl) ?>" class="sidebar-link <?= $activePage === 'tasks' ? 'active' : '' ?>">Tasks</a>
             <a href="<?= htmlspecialchars($reportsUrl) ?>" class="sidebar-link <?= $activePage === 'reports' ? 'active' : '' ?>">Reports</a>
+            <a href="<?= htmlspecialchars($hrUrl) ?>" class="sidebar-link <?= $activePage === 'hr' ? 'active' : '' ?>">HR</a>
+            <a href="<?= htmlspecialchars($aiUrl) ?>" class="sidebar-link <?= $activePage === 'ai' ? 'active' : '' ?>">AI</a>
         </nav>
         <a class="button secondary sidebar-logout" href="/logout.php">Logout</a>
     </aside>

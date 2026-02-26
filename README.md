@@ -11,6 +11,8 @@ A multi-tenant company task management tool for remote teams with roles, teams, 
 - Priorities and due dates
 - Employee daily report (time + summary + blockers + next plan)
 - Manager and admin daily report review dashboards
+- HR module (employee profiles + leave requests)
+- OpenAI-powered assistant (task planning, daily draft, HR guidance)
 - Comments, attachments, and activity log
 - Admin/Manager dashboard with reporting
 
@@ -29,6 +31,14 @@ php -S localhost:8000 -t public
 3. Open http://localhost:8000
 4. Register a company using a **company code** (e.g. `acme-co`).
 5. The first account becomes **Admin** for that company.
+
+## OpenAI Setup
+Set your API key before starting the server:
+
+```bash
+export OPENAI_API_KEY=\"your_api_key_here\"
+php -S localhost:8000 -t public
+```
 
 ## Database
 - The database auto-initializes on first run.

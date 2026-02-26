@@ -430,6 +430,21 @@ a {
     gap: 8px;
 }
 
+.ai-result pre {
+    white-space: pre-wrap;
+    margin: 0;
+    padding: 14px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f5f9ff, #eef6f2);
+    border: 1px solid #d8e7de;
+    font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    line-height: 1.45;
+}
+
+.table-row > div {
+    overflow-wrap: anywhere;
+}
+
 .modal {
     position: fixed;
     inset: 0;

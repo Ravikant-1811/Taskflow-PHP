@@ -87,3 +87,31 @@
 - `status`
 - `created_at`
 - `updated_at`
+
+## employee_profiles
+- `id` (PK)
+- `tenant_id` (FK)
+- `user_id` (FK, unique)
+- `department`
+- `designation`
+- `employment_type`
+- `location`
+- `manager_user_id` (FK users, nullable)
+- `joining_date`
+- `weekly_hour_target`
+- `created_at`
+- `updated_at`
+
+## leave_requests
+- `id` (PK)
+- `tenant_id` (FK)
+- `user_id` (FK)
+- `leave_type`
+- `start_date`
+- `end_date`
+- `total_days`
+- `reason`
+- `status` (pending/approved/rejected)
+- `decided_by` (FK users, nullable)
+- `decided_at`
+- `created_at`

@@ -23,6 +23,8 @@ $dueSoonTasks = count(array_filter($tasks, fn($task) => !empty($task['due_date']
 
 $pageTitle = 'Company Dashboard';
 $activePage = 'overview';
+$hrUrl = '/admin-hr.php';
+$aiUrl = '/ai-assistant.php';
 require __DIR__ . '/partials/admin_shell_start.php';
 ?>
     <div class="header admin-header">
@@ -30,6 +32,10 @@ require __DIR__ . '/partials/admin_shell_start.php';
             <span class="pill"><?= $canAdmin ? 'Admin' : 'Manager' ?></span>
             <h1>Company Dashboard</h1>
             <p class="subtitle">Overview of your company workspace.</p>
+        </div>
+        <div class="header-actions">
+            <a class="button secondary" href="/admin-hr.php">HR</a>
+            <a class="button secondary" href="/ai-assistant.php">AI assistant</a>
         </div>
     </div>
 
