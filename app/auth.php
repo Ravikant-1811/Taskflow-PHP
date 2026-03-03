@@ -46,10 +46,10 @@ function require_admin_page(): array
         return $user;
     }
     if ($role === 'manager') {
-        header('Location: /manager.php');
+        header('Location: /portal.php');
         exit;
     }
-    header('Location: /dashboard.php');
+    header('Location: /portal.php');
     exit;
 }
 
@@ -61,10 +61,10 @@ function require_manager_page(): array
         return $user;
     }
     if ($role === 'admin') {
-        header('Location: /admin.php');
+        header('Location: /portal.php');
         exit;
     }
-    header('Location: /dashboard.php');
+    header('Location: /portal.php');
     exit;
 }
 

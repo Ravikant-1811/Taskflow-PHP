@@ -6,7 +6,7 @@ require_once __DIR__ . '/../app/bootstrap.php';
 
 $user = current_user();
 if ($user) {
-    header('Location: /workspace.php');
+    header('Location: /portal.php');
     exit;
 }
 

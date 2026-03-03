@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = $stmt->fetch();
                 if ($user) {
                     login_user((int)$user['id']);
-                    header('Location: /workspace.php');
+                    header('Location: /portal.php');
                     exit;
                 }
                 $error = 'Unable to create account.';
