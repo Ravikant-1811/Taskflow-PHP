@@ -28,15 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 login_user((int)$user['id']);
                 $roleStmt = db()->prepare('SELECT role FROM users WHERE id = :id');
                 $roleStmt->execute([':id' => (int)$user['id']]);
-                $roleRow = $roleStmt->fetch();
-                $role = $roleRow['role'] ?? 'user';
-                if ($role === 'admin') {
-                    header('Location: /admin.php');
-                } elseif ($role === 'manager') {
-                    header('Location: /manager.php');
-                } else {
-                    header('Location: /dashboard.php');
-                }
+                header('Location: /workspace.php');
                 exit;
             }
 

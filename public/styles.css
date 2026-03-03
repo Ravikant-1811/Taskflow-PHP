@@ -927,3 +927,140 @@ button, .button {
 .brand-mark {
     background: linear-gradient(135deg, #2a6df5, #1bb6a8);
 }
+
+.workspace-container {
+    max-width: 1380px;
+}
+
+.workspace-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.workspace-command {
+    margin-bottom: 14px;
+}
+
+.workspace-search {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+}
+
+.workspace-create {
+    margin-bottom: 16px;
+}
+
+.workspace-create-form {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.workspace-create-form textarea {
+    grid-column: 1 / -2;
+}
+
+.workspace-board {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    align-items: start;
+}
+
+.workspace-column {
+    border: 1px solid #dde8fa;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f8fbff, #f4f8ff);
+    min-height: 320px;
+    padding: 12px;
+}
+
+.workspace-column-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.workspace-column-head h3 {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.workspace-column-head span {
+    background: #e6efff;
+    color: #234e98;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.workspace-cards {
+    display: grid;
+    gap: 10px;
+}
+
+.workspace-task {
+    background: #fff;
+    border: 1px solid #dbe7fb;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 8px 16px rgba(30, 60, 117, 0.07);
+}
+
+.workspace-task-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.workspace-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.chip.low {
+    background: #eaf6ff;
+    color: #245b9a;
+}
+
+.chip.medium {
+    background: #fff4df;
+    color: #9a5b19;
+}
+
+.chip.high {
+    background: #ffe6e5;
+    color: #a22f2b;
+}
+
+@media (max-width: 720px) {
+    .workspace-topbar {
+        flex-direction: column;
+    }
+
+    .workspace-search {
+        grid-template-columns: 1fr;
+    }
+
+    .workspace-create-form {
+        grid-template-columns: 1fr;
+    }
+
+    .workspace-create-form textarea {
+        grid-column: auto;
+    }
+
+    .workspace-board {
+        grid-template-columns: 1fr;
+    }
+}

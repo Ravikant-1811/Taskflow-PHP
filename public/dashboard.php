@@ -84,6 +84,7 @@ $createdTasks = fetch_tasks_created_by($tenantId, (int)$user['id']);
             <p class="subtitle">Assign tasks and track completion.</p>
         </div>
         <div class="header-actions">
+            <a class="button secondary" href="/workspace.php">Workspace</a>
             <a class="button secondary" href="/daily-report.php">Daily report</a>
             <a class="button secondary" href="/my-hr.php">My HR</a>
             <?php if ($isAdmin): ?>

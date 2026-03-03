@@ -45,13 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = $stmt->fetch();
                 if ($user) {
                     login_user((int)$user['id']);
-                    if ($role === 'admin') {
-                        header('Location: /admin.php');
-                    } elseif ($role === 'manager') {
-                        header('Location: /manager.php');
-                    } else {
-                        header('Location: /dashboard.php');
-                    }
+                    header('Location: /workspace.php');
                     exit;
                 }
                 $error = 'Unable to create account.';
