@@ -628,3 +628,51 @@ function update_leave_request_status(int $tenantId, int $leaveId, string $status
         ':tenant_id' => $tenantId,
     ]);
 }
+
+function star_task(int $userId, int $taskId): void
+{
+    $stmt = db()->prepare(
+        'INSERT OR IGNORE INTO starred_tasks (user_id, task_id) VALUES (:user_id, :task_id)'
+    );
+    $stmt->execute([
+        ':user_id' => $userId,
+        ':task_id' => $taskId,
+    ]);
+}
+
+function unstar_task(int $userId, int $taskId): void
+{
+    $stmt = db()->prepare(
+        'DELETE FROM starred_tasks WHERE user_id = :user_id AND task_id = :task_id'
+    );
+    $stmt->execute([
+        ':user_id' => $userId,
+        ':task_id' => $taskId,
+    ]);
+}
+
+function fetch_starred_task_ids(int $userId): array
+{
+    $stmt = db()->prepare('SELECT task_id FROM starred_tasks WHERE user_id = :user_id');
+    $stmt->execute([':user_id' => $userId]);
+    return array_map(static fn($r) => (int)$r['task_id'], $stmt->fetchAll());
+}
+
+function fetch_starred_tasks(int $tenantId, int $userId): array
+{
+    $stmt = db()->prepare(
+        'SELECT t.*, u1.name AS created_by_name, u2.name AS assigned_to_name, p.name AS project_name
+         FROM starred_tasks s
+         JOIN tasks t ON t.id = s.task_id
+         JOIN users u1 ON u1.id = t.created_by
+         JOIN users u2 ON u2.id = t.assigned_to
+         LEFT JOIN projects p ON p.id = t.project_id
+         WHERE s.user_id = :user_id AND t.tenant_id = :tenant_id
+         ORDER BY s.created_at DESC'
+    );
+    $stmt->execute([
+        ':user_id' => $userId,
+        ':tenant_id' => $tenantId,
+    ]);
+    return $stmt->fetchAll();
+}

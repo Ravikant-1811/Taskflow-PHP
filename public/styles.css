@@ -1114,6 +1114,10 @@ button, .button {
     color: #dbe8ff;
     border-radius: 10px;
     padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
 
 .portal-link:hover {
@@ -1123,6 +1127,15 @@ button, .button {
 .portal-link.active {
     background: linear-gradient(135deg, #2f87ff, #20b8a2);
     color: #fff;
+}
+
+.nav-count {
+    min-width: 22px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    text-align: center;
+    font-size: 0.72rem;
+    background: rgba(255, 255, 255, 0.18);
 }
 
 .portal-sidebar-foot {
@@ -1201,6 +1214,16 @@ button, .button {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.star-form button {
+    border: 1px solid #d6e2f6;
+    background: #fff;
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 34px;
+    height: 32px;
+    line-height: 1;
 }
 
 .stack-form {

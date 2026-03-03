@@ -102,4 +102,16 @@ function ensure_schema_updates(PDO $pdo): void
         )'
     );
     $pdo->exec('CREATE INDEX IF NOT EXISTS idx_leave_requests_tenant_status ON leave_requests(tenant_id, status)');
+
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS starred_tasks (
+            user_id INTEGER NOT NULL,
+            task_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (user_id, task_id),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )'
+    );
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_starred_tasks_task ON starred_tasks(task_id)');
 }

@@ -25,6 +25,10 @@ if ($canCreate) {
 
 $message = '';
 $error = '';
+$view = (string)($_GET['view'] ?? 'board');
+if (!in_array($view, ['board', 'list'], true)) {
+    $view = 'board';
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validate($_POST['csrf_token'] ?? null);
@@ -96,6 +100,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+
+    if ($action === 'star_task') {
+        $taskId = (int)($_POST['task_id'] ?? 0);
+        if ($taskId > 0) {
+            star_task($userId, $taskId);
+            $message = 'Task starred.';
+        }
+    }
+
+    if ($action === 'unstar_task') {
+        $taskId = (int)($_POST['task_id'] ?? 0);
+        if ($taskId > 0) {
+            unstar_task($userId, $taskId);
+            $message = 'Task removed from starred.';
+        }
+    }
 }
 
 if ($isAdmin) {
@@ -127,6 +147,8 @@ if ($q !== '') {
     }));
 }
 
+$starredIds = array_flip(fetch_starred_task_ids($userId));
+
 $columns = ['open' => [], 'in_progress' => [], 'done' => []];
 foreach ($tasks as $task) {
     $status = (string)($task['status'] ?? 'open');
@@ -145,9 +167,14 @@ require __DIR__ . '/partials/portal_shell_start.php';
 
 <section class="portal-card">
     <form method="get" class="workspace-search">
+        <input type="hidden" name="view" value="<?= htmlspecialchars($view) ?>">
         <input type="text" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Search tasks by title, description, assignee">
         <button type="submit">Search</button>
     </form>
+    <div class="header-actions">
+        <a class="button secondary" href="/portal-tasks.php?view=board<?= $q !== '' ? '&q=' . urlencode($q) : '' ?>">Board</a>
+        <a class="button secondary" href="/portal-tasks.php?view=list<?= $q !== '' ? '&q=' . urlencode($q) : '' ?>">List</a>
+    </div>
 </section>
 
 <?php if ($canCreate): ?>
@@ -181,6 +208,7 @@ require __DIR__ . '/partials/portal_shell_start.php';
 </section>
 <?php endif; ?>
 
+<?php if ($view === 'board'): ?>
 <section class="workspace-board">
     <?php foreach ($columns as $status => $items): ?>
         <div class="workspace-column">
@@ -199,6 +227,12 @@ require __DIR__ . '/partials/portal_shell_start.php';
                         <?php if (!empty($task['due_date'])): ?><p class="muted">Due: <?= htmlspecialchars((string)$task['due_date']) ?></p><?php endif; ?>
                         <div class="workspace-actions">
                             <a class="button small secondary" href="/task.php?id=<?= (int)$task['id'] ?>">Open</a>
+                            <form method="post" class="inline star-form">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+                                <input type="hidden" name="task_id" value="<?= (int)$task['id'] ?>">
+                                <input type="hidden" name="action" value="<?= isset($starredIds[(int)$task['id']]) ? 'unstar_task' : 'star_task' ?>">
+                                <button type="submit"><?= isset($starredIds[(int)$task['id']]) ? '★' : '☆' ?></button>
+                            </form>
                             <form method="post" class="inline">
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
                                 <input type="hidden" name="action" value="update_status">
@@ -216,4 +250,31 @@ require __DIR__ . '/partials/portal_shell_start.php';
         </div>
     <?php endforeach; ?>
 </section>
+<?php else: ?>
+<section class="portal-card">
+    <div class="portal-list">
+        <?php foreach ($tasks as $task): ?>
+            <article class="portal-list-item">
+                <div>
+                    <strong><?= htmlspecialchars((string)$task['title']) ?></strong>
+                    <p class="muted">
+                        <?= htmlspecialchars((string)($task['project_name'] ?? 'No project')) ?> ·
+                        <?= htmlspecialchars((string)($task['assigned_to_name'] ?? '')) ?> ·
+                        <?= htmlspecialchars((string)($task['status'] ?? 'open')) ?>
+                    </p>
+                </div>
+                <div class="portal-item-right">
+                    <form method="post" class="inline star-form">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+                        <input type="hidden" name="task_id" value="<?= (int)$task['id'] ?>">
+                        <input type="hidden" name="action" value="<?= isset($starredIds[(int)$task['id']]) ? 'unstar_task' : 'star_task' ?>">
+                        <button type="submit"><?= isset($starredIds[(int)$task['id']]) ? '★' : '☆' ?></button>
+                    </form>
+                    <a class="button small secondary" href="/task.php?id=<?= (int)$task['id'] ?>">Open</a>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
 <?php require __DIR__ . '/partials/portal_shell_end.php'; ?>

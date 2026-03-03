@@ -16,6 +16,8 @@ $isManager = in_array($role, ['admin', 'manager'], true);
 $dailyUrl = $isAdmin ? '/admin-daily-reports.php' : ($role === 'manager' ? '/manager-daily-reports.php' : '/daily-report.php');
 $hrUrl = $isAdmin ? '/admin-hr.php' : ($role === 'manager' ? '/manager-hr.php' : '/my-hr.php');
 $legacyOverview = $isAdmin ? '/admin-tasks.php' : ($role === 'manager' ? '/manager-tasks.php' : '/daily-report.php');
+$inboxCount = count(fetch_tasks_for_user((int)$user['tenant_id'], (int)$user['id']));
+$starredCount = count(fetch_starred_task_ids((int)$user['id']));
 ?>
 <!doctype html>
 <html lang="en">
@@ -37,6 +39,8 @@ $legacyOverview = $isAdmin ? '/admin-tasks.php' : ($role === 'manager' ? '/manag
 
         <nav class="portal-nav">
             <a class="portal-link <?= $activePage === 'overview' ? 'active' : '' ?>" href="/portal.php">Overview</a>
+            <a class="portal-link <?= $activePage === 'inbox' ? 'active' : '' ?>" href="/portal-inbox.php">Inbox <span class="nav-count"><?= $inboxCount ?></span></a>
+            <a class="portal-link <?= $activePage === 'starred' ? 'active' : '' ?>" href="/portal-starred.php">Starred <span class="nav-count"><?= $starredCount ?></span></a>
             <a class="portal-link <?= $activePage === 'tasks' ? 'active' : '' ?>" href="/portal-tasks.php">Tasks</a>
             <a class="portal-link <?= $activePage === 'projects' ? 'active' : '' ?>" href="/portal-projects.php">Projects</a>
             <a class="portal-link <?= $activePage === 'people' ? 'active' : '' ?>" href="/portal-people.php">People</a>
