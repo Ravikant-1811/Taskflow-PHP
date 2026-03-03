@@ -3,3 +3,5 @@
 /storage/*.db
 /storage/uploads
 .DS_Store
+references/
+public/wp-theme-taxblog/
